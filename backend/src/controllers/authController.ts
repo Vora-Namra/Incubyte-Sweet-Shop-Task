@@ -2,10 +2,15 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import User from '../models/User';
 import { generateToken } from '../utils/generateToken';
+import { loginSchema, registerSchema } from '../validators/authValidator';
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { name, email, password } = req.body;
+      const parsed = registerSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ errors: parsed.error.issues });
+    }
+    const { name, email, password } = parsed.data;
     if (!name || !email || !password) return res.status(400).json({ message: 'Missing fields' });
 
     const existing = await User.findOne({ email });
@@ -29,9 +34,15 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
+
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+
+    const parsed = loginSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ errors: parsed.error.issues });
+    }
+    const { email, password } = parsed.data;
     if (!email || !password) return res.status(400).json({ message: 'Missing fields' });
 
     const user = await User.findOne({ email });
