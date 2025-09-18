@@ -12,8 +12,9 @@ import { protect, adminOnly } from '../middlewares/auth';
 
 const router = express.Router();
 
-router.get('/', protect, getSweets);
+
 router.get('/search', protect, searchSweets);
+router.get('/', protect, getSweets);
 router.post('/', protect, createSweet);
 router.put('/:id', protect, updateSweet);
 router.delete('/:id', protect, adminOnly, deleteSweet);

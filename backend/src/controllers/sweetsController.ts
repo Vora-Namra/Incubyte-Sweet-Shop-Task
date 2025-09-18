@@ -24,8 +24,29 @@ export const getSweets = async (_req: Request, res: Response) => {
 };
 
 export const searchSweets = async (req: Request, res: Response) => {
-  
+  try {
+    const { name, category, minPrice, maxPrice } = req.query;
+
+    const filter: any = {};
+
+    if (name) filter.name = new RegExp(name as string, 'i');
+    if (category) filter.category = new RegExp(category as string, 'i');
+    if (minPrice) filter.price = { ...filter.price, $gte: Number(minPrice) };
+    if (maxPrice) filter.price = { ...filter.price, $lte: Number(maxPrice) };
+
+    if (Object.keys(filter).length === 0) {
+      return res.status(400).json({ message: 'Please provide at least one search filter' });
+    }
+
+    const sweets = await Sweet.find(filter);
+    res.json(sweets);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
 };
+
+
+
 
 export const updateSweet = async (req: Request, res: Response) => {
   try {
