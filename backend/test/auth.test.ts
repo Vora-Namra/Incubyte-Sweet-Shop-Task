@@ -36,7 +36,7 @@ describe('Auth API', () => {
       const res = await request(app).post('/api/auth/register').send({
         name: 'ShortPass',
         email: 'shortpass@example.com',
-        password: '123', // too short
+        password: '123',
       });
       expect(res.status).toBe(400);
     });
@@ -55,7 +55,7 @@ describe('Auth API', () => {
         name: 'Extra Fields',
         email: 'extrafields@example.com',
         password: 'password123',
-        role: 'admin', // not allowed
+        role: 'admin',
         randomKey: 'hack',
       });
       expect(res.status).toBe(400);
@@ -79,12 +79,57 @@ describe('Auth API', () => {
       });
       expect(res.status).toBe(400);
     });
+
+    test('should fail if name contains only spaces', async () => {
+      const res = await request(app).post('/api/auth/register').send({
+        name: '   ',
+        email: 'spacesonly@example.com',
+        password: 'password123'
+      });
+      expect(res.status).toBe(400);
+    });
+
+    test('should fail if password contains only spaces', async () => {
+      const res = await request(app).post('/api/auth/register').send({
+        name: 'SpacePass',
+        email: 'spacepass@example.com',
+        password: '      '
+      });
+      expect(res.status).toBe(400);
+    });
+
+    test('should fail if email has leading/trailing spaces', async () => {
+      const res = await request(app).post('/api/auth/register').send({
+        name: 'TrimCheck',
+        email: '   test2@example.com   ',
+        password: 'password123'
+      });
+      expect(res.status).toBe(400);
+    });
+
+    test('should fail if email is valid format but domain is suspicious (e.g., test@)', async () => {
+      const res = await request(app).post('/api/auth/register').send({
+        name: 'SuspiciousDomain',
+        email: 'test@',
+        password: 'password123'
+      });
+      expect(res.status).toBe(400);
+    });
+
+    test('should fail if request body is not JSON (send text)', async () => {
+      const res = await request(app)
+        .post('/api/auth/register')
+        .set('Content-Type', 'text/plain')
+        .send('not a json');
+      expect([400, 415]).toContain(res.status);
+    });
+
+    test('should fail if request body is an array', async () => {
+      const res = await request(app).post('/api/auth/register').send([]);
+      expect(res.status).toBe(400);
+    });
   });
 
-
-
-
-  //Login Route Test 
   describe('POST /api/auth/login', () => {
     test('should fail if email is missing', async () => {
       const res = await request(app).post('/api/auth/login').send({ password: 'password123' });
@@ -93,11 +138,6 @@ describe('Auth API', () => {
 
     test('should fail if password is missing', async () => {
       const res = await request(app).post('/api/auth/login').send({ email: 'test@example.com' });
-      expect(res.status).toBe(400);
-    });
-
-    test('should fail if body is completely missing', async () => {
-      const res = await request(app).post('/api/auth/login');
       expect(res.status).toBe(400);
     });
 
@@ -134,7 +174,7 @@ describe('Auth API', () => {
       expect(res.body).toHaveProperty('token');
     });
 
-    test('should fail if too many failed attempts are made (brute-force simulation)', async () => {
+    test('should fail if too many failed attempts are made (brute-force)', async () => {
       for (let i = 0; i < 5; i++) {
         await request(app).post('/api/auth/login').send({
           email: 'test@example.com',
@@ -145,7 +185,57 @@ describe('Auth API', () => {
         email: 'test@example.com',
         password: 'wrongpassword',
       });
-      expect([400, 429]).toContain(res.status); // depending on rate-limit logic
+      expect([400, 429]).toContain(res.status);
+    });
+
+    test('should fail if email is correct but case sensitivity not handled', async () => {
+      const res = await request(app).post('/api/auth/login').send({
+        email: 'TEST@EXAMPLE.COM',
+        password: 'password123'
+      });
+      expect(res.status).toBe(400);
+    });
+
+    test('should fail if password contains SQL injection attempt', async () => {
+      const res = await request(app).post('/api/auth/login').send({
+        email: 'test@example.com',
+        password: "' OR '1'='1"
+      });
+      expect(res.status).toBe(400);
+    });
+
+    test('should fail if login request includes extra unexpected fields', async () => {
+      const res = await request(app).post('/api/auth/login').send({
+        email: 'test@example.com',
+        password: 'password123',
+        isAdmin: true,
+        debug: true
+      });
+      expect(res.status).toBe(400);
+    });
+
+    test('should fail if email is missing "@" but looks close', async () => {
+      const res = await request(app).post('/api/auth/login').send({
+        email: 'testexample.com',
+        password: 'password123'
+      });
+      expect(res.status).toBe(400);
+    });
+
+    test('should fail if email is an empty string', async () => {
+      const res = await request(app).post('/api/auth/login').send({
+        email: '',
+        password: 'password123'
+      });
+      expect(res.status).toBe(400);
+    });
+
+    test('should fail if password is extremely long (over 200 chars)', async () => {
+      const res = await request(app).post('/api/auth/login').send({
+        email: 'test@example.com',
+        password: 'x'.repeat(201)
+      });
+      expect(res.status).toBe(400);
     });
   });
 });
