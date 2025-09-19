@@ -7,21 +7,17 @@ import User from '../src/models/User';
 const MONGO_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/sweetshop';
 
 beforeAll(async () => {
-  // Connect to the test database
   await mongoose.connect(MONGO_URI);
   await User.deleteMany({});
 });
 
 afterAll(async () => {
-  // Close DB connection
   await mongoose.connection.close();
 });
 
 beforeEach(async () => {
-  // Clear users before each test to avoid duplicates
   await User.deleteMany({});
 
-  // Register a test user for login tests
   await request(app).post("/api/auth/register").send({
     name: "Test User",
     email: "test@example.com",
@@ -30,9 +26,6 @@ beforeEach(async () => {
 });
 
 describe('Auth API', () => {
-  // -------------------------
-  // Registration Tests
-  // -------------------------
   describe('POST /api/auth/register', () => {
     test('should fail if required fields are missing', async () => {
       const res = await request(app).post('/api/auth/register').send({});
@@ -115,9 +108,6 @@ describe('Auth API', () => {
     });
   });
 
-  // -------------------------
-  // Login Tests
-  // -------------------------
   describe('POST /api/auth/login', () => {
     test('should fail if email is missing', async () => {
       const res = await request(app).post('/api/auth/login').send({ password: 'password123' });

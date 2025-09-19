@@ -4,17 +4,23 @@ import { sweetSchema, searchSchema,purchaseSchema,restockSchema, updateSweetSche
 
 export const createSweet = async (req: Request, res: Response) => {
   try {
-     const parsed = sweetSchema.safeParse(req.body);
+    const parsed = sweetSchema.strict().refine(
+      data => data.name.trim().length > 0 && data.category.trim().length > 0,
+      { message: "Name and Category cannot be empty or spaces only" }
+    ).safeParse(req.body);
+
     if (!parsed.success) {
       return res.status(400).json({ errors: parsed.error.issues });
     }
+
     const { name, category, price, quantity } = parsed.data;
-    const sweet = await Sweet.create({ name, category, price, quantity });
+    const sweet = await Sweet.create({ name: name.trim(), category: category.trim(), price, quantity });
     res.status(201).json(sweet);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 export const getSweets = async (_req: Request, res: Response) => {
   try {
@@ -84,36 +90,36 @@ export const deleteSweet = async (req: Request, res: Response) => {
 
 export const purchaseSweet = async (req: Request, res: Response) => {
   try {
-     const parsed = purchaseSchema.safeParse(req.body);
-
-    if (!parsed.success) {
-      return res.status(400).json({ errors: parsed.error.issues });
-    }
+    const parsed = purchaseSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ errors: parsed.error.issues });
 
     const sweet = await Sweet.findById(req.params.id);
-    const PurchaseQuantity= req.body.quantity;
-    if(PurchaseQuantity<=0) return res.status(400).json({message:'Purchase Quantity must be > 0'});
     if (!sweet) return res.status(404).json({ message: 'Not found' });
-    if (sweet.quantity <= 0) return res.status(400).json({ message: 'Out of stock' });
-    sweet.quantity = sweet.quantity - PurchaseQuantity;
+
+    const PurchaseQuantity = parsed.data.quantity;
+    if (PurchaseQuantity <= 0) return res.status(400).json({ message: 'Purchase quantity must be > 0' });
+    if (PurchaseQuantity > sweet.quantity) return res.status(400).json({ message: 'Purchase quantity exceeds stock' });
+
+    sweet.quantity -= PurchaseQuantity;
     await sweet.save();
     res.json({ message: 'Purchased', sweet });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
 export const restockSweet = async (req: Request, res: Response) => {
   try {
-    const parsed = restockSchema.safeParse(req.body);
-    if (!parsed.success) {
-      return res.status(400).json({ errors: parsed.error.issues });
-    }
-    const amount = Number(parsed.data.amount || 0);
+    // strict schema ensures no extra fields
+    const parsed = restockSchema.strict().safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ errors: parsed.error.issues });
+
+    const amount = parsed.data.amount;
     if (amount <= 0) return res.status(400).json({ message: 'Amount must be > 0' });
+
     const sweet = await Sweet.findById(req.params.id);
     if (!sweet) return res.status(404).json({ message: 'Not found' });
-    sweet.quantity = sweet.quantity + amount;
+
+    sweet.quantity += amount;
     await sweet.save();
     res.json({ message: 'Restocked', sweet });
   } catch (err) {

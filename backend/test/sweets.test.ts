@@ -22,9 +22,6 @@ describe("Sweets API", () => {
     await Sweet.deleteMany({});
   });
 
-  // -------------------------
-  // POST /api/sweets
-  // -------------------------
   describe("POST /api/sweets", () => {
     it("should fail if name contains only spaces", async () => {
       const res = await request(app)
@@ -94,9 +91,6 @@ describe("Sweets API", () => {
     });
   });
 
-  // -------------------------
-  // PUT /api/sweets/:id
-  // -------------------------
   describe("PUT /api/sweets/:id", () => {
     it("should fail if updating with negative price", async () => {
       const sweet = await Sweet.create({ name: "Mint", category: "Candy", price: 3, quantity: 20 });
@@ -126,9 +120,6 @@ describe("Sweets API", () => {
     });
   });
 
-  // -------------------------
-  // POST /api/sweets/:id/purchase
-  // -------------------------
   describe("POST /api/sweets/:id/purchase", () => {
     it("should fail if quantity exceeds stock", async () => {
       const sweet = await Sweet.create({ name: "Toffee", category: "Candy", price: 2, quantity: 5 });
@@ -149,9 +140,6 @@ describe("Sweets API", () => {
     });
   });
 
-  // -------------------------
-  // POST /api/sweets/:id/restock
-  // -------------------------
   describe("POST /api/sweets/:id/restock", () => {
     it("should fail if restock amount is string", async () => {
       const sweet = await Sweet.create({ name: "Cookie", category: "Bakery", price: 5, quantity: 10 });
