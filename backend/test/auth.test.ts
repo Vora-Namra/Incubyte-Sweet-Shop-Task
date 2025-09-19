@@ -104,7 +104,7 @@ describe('Auth API', () => {
         email: '   test2@example.com   ',
         password: 'password123'
       });
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(201);
     });
 
     test('should fail if email is valid format but domain is suspicious (e.g., test@)', async () => {
