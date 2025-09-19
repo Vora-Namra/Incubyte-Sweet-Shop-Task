@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import Sweet from '../models/Sweet';
-import { sweetSchema, searchSchema,purchaseSchema,restockSchema } from '../validators/sweetValidator';
+import { sweetSchema, searchSchema,purchaseSchema,restockSchema, updateSweetSchema } from '../validators/sweetValidator';
 
 export const createSweet = async (req: Request, res: Response) => {
   try {
@@ -58,11 +58,17 @@ export const searchSweets = async (req: Request, res: Response) => {
 
 export const updateSweet = async (req: Request, res: Response) => {
   try {
-    const updated = await Sweet.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updated) return res.status(404).json({ message: 'Not found' });
+    const parsed = updateSweetSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ errors: parsed.error.issues });
+    }
+
+    const updated = await Sweet.findByIdAndUpdate(req.params.id, parsed.data, { new: true });
+    if (!updated) return res.status(404).json({ message: "Not found" });
+
     res.json(updated);
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 };
 

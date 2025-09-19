@@ -21,3 +21,10 @@ export const searchSchema = z.object({
   minPrice: z.string().optional(),
   maxPrice: z.string().optional()
 });
+
+export const updateSweetSchema = z.object({
+  name: z.string().trim().min(1).optional(),
+  category: z.string().trim().min(1).optional(),
+  price: z.number().nonnegative().optional(),
+  quantity: z.number().int().nonnegative().optional()
+}).strict();
