@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5000/api/sweets";
+const API_URL =  "https://incubyte-sweet-shop-task.vercel.app/api/sweets";
 
 async function handleResponse(res: Response) {
   const data = await res.json().catch(() => ({}));
@@ -9,7 +9,7 @@ async function handleResponse(res: Response) {
 }
 
 export async function getSweets(token: string) {
-  const res = await fetch(API_URL, {
+  const res = await fetch(`${API_URL}/`, {
     headers: { Authorization: `Bearer ${token}` }
   });
   return handleResponse(res);
