@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import type { JSX } from "react";
+import Sweets from "./pages/Sweets";
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { token } = useAuth();
@@ -18,7 +19,9 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           {/* later: sweets dashboard inside ProtectedRoute */}
-          <Route path="/" element={<ProtectedRoute><div>Dashboard</div></ProtectedRoute>} />
+          <Route path="/" element={<ProtectedRoute><Sweets /></ProtectedRoute>} />
+
+          {/* <Route path="/" element={<ProtectedRoute><div>Dashboard</div></ProtectedRoute>} /> */}
         </Routes>
       </Router>
     </AuthProvider>
