@@ -1,18 +1,23 @@
 import { useState } from "react";
 import { loginUser } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router";
 
 export default function Login() {
   const { setToken } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true); 
     const data = await loginUser({ email, password });
     if (data.token) {
       setToken(data.token);
       alert("Login successful");
+      navigate("/");
     } else {
       alert(data.message || "Login failed");
     }
