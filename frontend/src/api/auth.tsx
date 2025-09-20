@@ -1,4 +1,4 @@
-const API_URL =  "https://incubyte-sweet-shop-task.vercel.app/api/auth";
+const API_URL =  "http://localhost:5000/api/auth";
 
 export async function registerUser(data: { name: string; email: string; password: string }) {
   const res = await fetch(`${API_URL}/register`, {
