@@ -4,6 +4,7 @@ import { registerUser } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, User, Sparkles, ArrowRight, Heart, Star } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function Register() {
   const { setToken } = useAuth();
@@ -93,6 +94,7 @@ export default function Register() {
 
       if (data.token) {
         setToken(data.token);
+        toast.success("Registration successful!");
         navigate("/dashboard");
       } else {
         setErrors({
@@ -102,6 +104,7 @@ export default function Register() {
           confirmPassword: "",
           general: data.message || "Registration failed"
         });
+        toast.error(data.message || "Registration failed");
       }
     } catch (error) {
       setErrors({

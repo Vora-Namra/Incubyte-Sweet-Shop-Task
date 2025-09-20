@@ -4,6 +4,7 @@ import { loginUser } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router";
 import { Eye, EyeOff, Mail, Lock, Sparkles, ArrowRight, Heart } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function Login() {
   const { setToken } = useAuth();
@@ -50,12 +51,15 @@ export default function Login() {
       const data = await loginUser({ email, password });
       if (data.token) {
         setToken(data.token);
+        toast.success("Login successful!");
         navigate("/dashboard");
       } else {
         setErrors({ email: "", password: data.message || "Login failed" });
+        toast.error(data.message || "Login failed");
       }
     } catch (error) {
       setErrors({ email: "", password: "Network error. Please try again." });
+      toast.error("Network error. Please try again.");
     } finally {
       setLoading(false);
     }

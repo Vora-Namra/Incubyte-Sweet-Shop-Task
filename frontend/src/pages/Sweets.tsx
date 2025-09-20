@@ -28,6 +28,7 @@ import {
   DollarSign,
   Star
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 type Sweet = {
   _id: string;
@@ -100,11 +101,14 @@ export default function Sweets() {
         setQuantity("");
         setError(null);
         setShowCreateForm(false);
+        toast.success("Sweet added successfully!");
       } else {
         setError(newSweet.message || "Failed to create sweet");
+        toast.error("Failed to create sweet");
       }
     } catch {
       setError("Failed to create sweet");
+      toast.error("Failed to create sweet");
     }
   };
 
@@ -113,11 +117,16 @@ export default function Sweets() {
     if (!token) return;
     try {
       const res = await purchaseSweet(token, id, qty);
-      if (res.sweet)
+      if (res.sweet){
         setSweets((prev) => prev.map((s) => (s._id === id ? res.sweet : s)));
-      else setError(res.message || "Failed to purchase sweet");
+        toast.success("Purchase successful!");
+      } else {
+        setError(res.message || "Failed to purchase sweet");
+        toast.error(res.message || "Failed to purchase sweet");
+      }
     } catch {
       setError("Purchase failed");
+      toast.error("Purchase failed"); 
     }
   };
 
@@ -126,11 +135,17 @@ export default function Sweets() {
     if (!token || !isAdmin || amount <= 0) return;
     try {
       const res = await restockSweet(token, id, amount);
-      if (res.sweet)
+      if (res.sweet){
         setSweets((prev) => prev.map((s) => (s._id === id ? res.sweet : s)));
-      else setError(res.message || "Restock failed");
+        toast.success("Restock successful!");
+      }
+      else {
+        setError(res.message || "Restock failed");
+        toast.error(res.message || "Restock failed");
+      }
     } catch {
       setError("Restock failed");
+      toast.error("Restock failed");
     }
   };
 
@@ -141,11 +156,17 @@ export default function Sweets() {
     
     try {
       const res = await deleteSweet(token, id);
-      if (res.message === "Deleted")
+      if (res.message === "Deleted"){
         setSweets((prev) => prev.filter((s) => s._id !== id));
-      else setError(res.message || "Delete failed");
+        toast.success("Sweet deleted successfully!");
+      }
+      else {
+        setError(res.message || "Delete failed");
+        toast.error(res.message || "Delete failed");
+      }
     } catch {
       setError("Delete failed");
+      toast.error("Delete failed");
     }
   };
 
@@ -585,9 +606,14 @@ function SweetItem({
         );
         setError(null);
         setIsEditing(false);
-      } else setError(updatedSweet.message || "Update failed");
+        toast.success("Sweet updated successfully!");
+      } else {
+        setError(updatedSweet.message || "Update failed");
+        toast.error(updatedSweet.message || "Update failed");
+      }
     } catch {
       setError("Update failed");
+      toast.error("Update failed");
     }
   };
 

@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import type { JSX } from "react";
 import Sweets from "./pages/Sweets";
 import Landing from "./pages/Landing";
+import { Toaster } from "react-hot-toast";
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { token } = useAuth();
@@ -26,6 +27,8 @@ export default function App() {
           <Route path="/" element={<Navigate to="/landing" replace />} />
         </Routes>
       </Router>
+      <Toaster position="top-right" reverseOrder={false} />
+
     </AuthProvider>
   );
 }
