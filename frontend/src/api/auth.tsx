@@ -1,5 +1,5 @@
-const API_URL =  "https://incubyte-sweet-shop-task-334twfmu4-vora-namra-projects.vercel.app/api/auth";
-
+const API_URL = (import.meta.env.VITE_BACKEND_URL ?? "https://incubyte-sweet-shop-task.vercel.app") + "/api/auth";
+// const API_URL = "http://localhost:5000/api/auth";
 export async function registerUser(data: { name: string; email: string; password: string }) {
   const res = await fetch(`${API_URL}/register`, {
     method: "POST",

@@ -1,4 +1,5 @@
-const API_URL =  "https://incubyte-sweet-shop-task.vercel.app/api/sweets";
+// const API_URL =  "https://incubyte-sweet-shop-task.vercel.app/api/sweets";
+const API_URL = "http://localhost:5000/api/sweets";
 
 async function handleResponse(res: Response) {
   const data = await res.json().catch(() => ({}));
