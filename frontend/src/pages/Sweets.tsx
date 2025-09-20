@@ -7,6 +7,7 @@ import {
   restockSweet,
   deleteSweet,
   searchSweets,
+  updateSweet,
 } from "../api/sweet";
 
 type Sweet = {
@@ -90,7 +91,8 @@ export default function Sweets() {
     if (!token) return;
     try {
       const res = await purchaseSweet(token, id, qty);
-      if (res.sweet) setSweets((prev) => prev.map((s) => (s._id === id ? res.sweet : s)));
+      if (res.sweet)
+        setSweets((prev) => prev.map((s) => (s._id === id ? res.sweet : s)));
       else setError(res.message || "Failed to purchase sweet");
     } catch {
       setError("Purchase failed");
@@ -99,11 +101,12 @@ export default function Sweets() {
 
   // --- RESTOCK (Admin only) ---
   const handleRestock = async (id: string, amount: number) => {
-    if (!token || !isAdmin) return;
+    if (!token || !isAdmin || amount <= 0) return;
     try {
       const res = await restockSweet(token, id, amount);
-      if (res.sweet) setSweets((prev) => prev.map((s) => (s._id === id ? res.sweet : s)));
-      else setError(res.message || "Failed to restock sweet");
+      if (res.sweet)
+        setSweets((prev) => prev.map((s) => (s._id === id ? res.sweet : s)));
+      else setError(res.message || "Restock failed");
     } catch {
       setError("Restock failed");
     }
@@ -114,7 +117,8 @@ export default function Sweets() {
     if (!token || !isAdmin) return;
     try {
       const res = await deleteSweet(token, id);
-      if (res.message === "Deleted") setSweets((prev) => prev.filter((s) => s._id !== id));
+      if (res.message === "Deleted")
+        setSweets((prev) => prev.filter((s) => s._id !== id));
       else setError(res.message || "Delete failed");
     } catch {
       setError("Delete failed");
@@ -139,7 +143,6 @@ export default function Sweets() {
         maxPrice: searchMaxPrice,
       });
 
-      
       if (Array.isArray(data)) {
         setSweets(data);
         setError(null);
@@ -272,60 +275,159 @@ export default function Sweets() {
         <p>Loading sweets...</p>
       ) : (
         sweets.map((s) => (
-          <div
+          <SweetItem
             key={s._id}
-            className="bg-white p-4 rounded-lg shadow mb-4 flex flex-col md:flex-row md:justify-between md:items-center"
-          >
-            <div>
-              <h3 className="text-lg font-semibold">{s.name}</h3>
-              <p className="text-gray-600">{s.category}</p>
-              <p className="text-gray-800 font-medium">
-                ${s.price} | Stock: {s.quantity}
-              </p>
-            </div>
-
-            <div className="flex gap-2 mt-2 md:mt-0 items-center">
-              <input
-                type="number"
-                min={1}
-                max={s.quantity}
-                defaultValue={1}
-                className="w-16 border rounded p-1 text-center"
-                id={`purchase-${s._id}`}
-              />
-              <button
-                onClick={() => {
-                  const qty = Number(
-                    (document.getElementById(
-                      `purchase-${s._id}`
-                    ) as HTMLInputElement).value
-                  );
-                  handlePurchase(s._id, qty);
-                }}
-                className="bg-green-500 text-white py-1 px-2 rounded hover:bg-green-600"
-              >
-                Purchase
-              </button>
-              {isAdmin && (
-                <>
-                  <button
-                    onClick={() => handleRestock(s._id, 5)}
-                    className="bg-yellow-500 text-white py-1 px-2 rounded hover:bg-yellow-600"
-                  >
-                    Restock +5
-                  </button>
-                  <button
-                    onClick={() => handleDelete(s._id)}
-                    className="bg-red-500 text-white py-1 px-2 rounded hover:bg-red-600"
-                  >
-                    Delete
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
+            sweet={s}
+            token={token!}
+            isAdmin={isAdmin}
+            setSweets={setSweets}
+            setError={setError}
+            handlePurchase={handlePurchase}
+            handleRestock={handleRestock}
+            handleDelete={handleDelete}
+          />
         ))
       )}
+    </div>
+  );
+}
+
+// --- SweetItem component ---
+type SweetItemProps = {
+  sweet: Sweet;
+  token: string;
+  isAdmin: boolean;
+  setSweets: React.Dispatch<React.SetStateAction<Sweet[]>>;
+  setError: React.Dispatch<React.SetStateAction<string | null>>;
+  handlePurchase: (id: string, qty: number) => void;
+  handleRestock: (id: string, amount: number) => void;
+  handleDelete: (id: string) => void;
+};
+
+function SweetItem({
+  sweet,
+  token,
+  isAdmin,
+  setSweets,
+  setError,
+  handlePurchase,
+  handleRestock,
+  handleDelete,
+}: SweetItemProps) {
+  const [editName, setEditName] = useState(sweet.name);
+  const [editCategory, setEditCategory] = useState(sweet.category);
+  const [editPrice, setEditPrice] = useState(sweet.price.toString());
+  const [editQuantity, setEditQuantity] = useState(sweet.quantity.toString());
+  const [purchaseQty, setPurchaseQty] = useState(1);
+
+  // Sync local state if sweet quantity changes externally
+  useEffect(() => {
+    setEditQuantity(sweet.quantity.toString());
+  }, [sweet.quantity]);
+
+  const handleUpdate = async () => {
+    try {
+      const updatedSweet = await updateSweet(token, sweet._id, {
+        name: editName,
+        category: editCategory,
+        price: Number(editPrice),
+        quantity: Number(editQuantity),
+      });
+      if (updatedSweet._id) {
+        setSweets((prev) =>
+          prev.map((s) => (s._id === sweet._id ? updatedSweet : s))
+        );
+        setError(null);
+      } else setError(updatedSweet.message || "Update failed");
+    } catch {
+      setError("Update failed");
+    }
+  };
+
+  const handlePurchaseClick = () => {
+    const newQuantity = sweet.quantity - purchaseQty;
+    handlePurchase(sweet._id, purchaseQty);
+    setEditQuantity(newQuantity.toString());
+    setPurchaseQty(1);
+  };
+
+  const handleRestockClick = (amount: number) => {
+    handleRestock(sweet._id, amount);
+    setEditQuantity((Number(editQuantity) + amount).toString());
+  };
+
+  return (
+    <div className="bg-white p-4 rounded-lg shadow mb-4 flex flex-col md:flex-row md:justify-between md:items-center gap-2">
+      <div className="flex flex-col gap-1">
+        <input
+          type="text"
+          value={editName}
+          onChange={(e) => setEditName(e.target.value)}
+          className="border p-1 rounded"
+        />
+        <input
+          type="text"
+          value={editCategory}
+          onChange={(e) => setEditCategory(e.target.value)}
+          className="border p-1 rounded"
+        />
+        <input
+          type="number"
+          value={editPrice}
+          onChange={(e) => setEditPrice(e.target.value)}
+          className="border p-1 rounded"
+        />
+        <input
+          type="number"
+          value={editQuantity}
+          onChange={(e) => setEditQuantity(e.target.value)}
+          className="border p-1 rounded"
+        />
+        <p className="text-gray-800 font-medium">
+          Current Stock: {sweet.quantity}
+        </p>
+      </div>
+
+      <div className="flex gap-2 mt-2 md:mt-0 items-center">
+        <button
+          onClick={handleUpdate}
+          className="bg-blue-600 text-white py-1 px-2 rounded hover:bg-blue-700"
+        >
+          Update
+        </button>
+
+        <input
+          type="number"
+          min={1}
+          max={sweet.quantity}
+          value={purchaseQty}
+          onChange={(e) => setPurchaseQty(Number(e.target.value))}
+          className="w-16 border rounded p-1 text-center"
+        />
+        <button
+          onClick={handlePurchaseClick}
+          className="bg-green-500 text-white py-1 px-2 rounded hover:bg-green-600"
+        >
+          Purchase
+        </button>
+
+        {isAdmin && (
+          <>
+            <button
+              onClick={() => handleRestockClick(5)}
+              className="bg-yellow-500 text-white py-1 px-2 rounded hover:bg-yellow-600"
+            >
+              Restock +5
+            </button>
+            <button
+              onClick={() => handleDelete(sweet._id)}
+              className="bg-red-500 text-white py-1 px-2 rounded hover:bg-red-600"
+            >
+              Delete
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }

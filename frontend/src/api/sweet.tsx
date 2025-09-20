@@ -86,3 +86,19 @@ export async function searchSweets(
   });
   return handleResponse(res);
 }
+
+export async function updateSweet(
+  token: string,
+  id: string,
+  data: { name?: string; category?: string; price?: number; quantity?: number }
+) {
+  const res = await fetch(`${API_URL}/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(res);
+}
