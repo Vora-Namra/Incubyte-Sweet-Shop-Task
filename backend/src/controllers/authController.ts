@@ -21,7 +21,7 @@ export const register = async (req: Request, res: Response) => {
 
     const user = await User.create({ name, email, password: hashed });
     const token = generateToken({ id: user._id, isAdmin: false });
-
+    
     res.status(201).json({
       id: user._id,
       name: user.name,
