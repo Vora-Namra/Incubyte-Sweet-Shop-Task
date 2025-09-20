@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import  {useAuth} from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import {
   getSweets,
   createSweet,
@@ -52,6 +52,7 @@ export default function Sweets() {
     setLoading(false);
   };
 
+  // --- CREATE ---
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token) return;
@@ -84,6 +85,7 @@ export default function Sweets() {
     }
   };
 
+  // --- PURCHASE ---
   const handlePurchase = async (id: string, qty: number) => {
     if (!token) return;
     try {
@@ -95,6 +97,7 @@ export default function Sweets() {
     }
   };
 
+  // --- RESTOCK (Admin only) ---
   const handleRestock = async (id: string, amount: number) => {
     if (!token || !isAdmin) return;
     try {
@@ -106,6 +109,7 @@ export default function Sweets() {
     }
   };
 
+  // --- DELETE (Admin only) ---
   const handleDelete = async (id: string) => {
     if (!token || !isAdmin) return;
     try {
@@ -117,8 +121,16 @@ export default function Sweets() {
     }
   };
 
+  // --- SEARCH ---
   const handleSearch = async () => {
     if (!token) return;
+
+    // If all filters empty, reload all sweets
+    if (!searchName && !searchCategory && !searchMinPrice && !searchMaxPrice) {
+      loadSweets();
+      return;
+    }
+
     try {
       const data = await searchSweets(token, {
         name: searchName,
@@ -126,10 +138,24 @@ export default function Sweets() {
         minPrice: searchMinPrice,
         maxPrice: searchMaxPrice,
       });
-      if (Array.isArray(data)) setSweets(data);
-      else setError(data.message || "Search failed");
+
+      
+      if (Array.isArray(data)) {
+        setSweets(data);
+        setError(null);
+      } else {
+        setError(data.message || "Search failed");
+      }
     } catch {
       setError("Search failed");
+    }
+  };
+
+  // --- Enter key search ---
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSearch();
     }
   };
 
@@ -158,6 +184,7 @@ export default function Sweets() {
           placeholder="Name"
           value={searchName}
           onChange={(e) => setSearchName(e.target.value)}
+          onKeyDown={handleKeyDown}
           className="w-full border p-2 rounded"
         />
         <input
@@ -165,6 +192,7 @@ export default function Sweets() {
           placeholder="Category"
           value={searchCategory}
           onChange={(e) => setSearchCategory(e.target.value)}
+          onKeyDown={handleKeyDown}
           className="w-full border p-2 rounded"
         />
         <div className="flex gap-2">
@@ -173,6 +201,7 @@ export default function Sweets() {
             placeholder="Min Price"
             value={searchMinPrice}
             onChange={(e) => setSearchMinPrice(e.target.value)}
+            onKeyDown={handleKeyDown}
             className="w-1/2 border p-2 rounded"
           />
           <input
@@ -180,6 +209,7 @@ export default function Sweets() {
             placeholder="Max Price"
             value={searchMaxPrice}
             onChange={(e) => setSearchMaxPrice(e.target.value)}
+            onKeyDown={handleKeyDown}
             className="w-1/2 border p-2 rounded"
           />
         </div>
@@ -200,33 +230,33 @@ export default function Sweets() {
         <input
           type="text"
           placeholder="Name"
-          className="w-full border p-2 rounded"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          className="w-full border p-2 rounded"
           required
         />
         <input
           type="text"
           placeholder="Category"
-          className="w-full border p-2 rounded"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
+          className="w-full border p-2 rounded"
           required
         />
         <input
           type="number"
           placeholder="Price"
-          className="w-full border p-2 rounded"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
+          className="w-full border p-2 rounded"
           required
         />
         <input
           type="number"
           placeholder="Quantity"
-          className="w-full border p-2 rounded"
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
+          className="w-full border p-2 rounded"
           required
         />
         <button
