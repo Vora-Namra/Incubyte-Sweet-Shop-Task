@@ -1,8 +1,8 @@
 import request from "supertest";
-import app from "../src/app"; 
+import app from "../app"; 
 import mongoose from "mongoose";
-import Sweet from "../src/models/Sweet";
-import { generateToken } from "../src/utils/generateToken";
+import Sweet from "../models/Sweet";
+import { generateToken } from "../utils/generateToken";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 const userToken = generateToken({ id: new mongoose.Types.ObjectId(), isAdmin: false });

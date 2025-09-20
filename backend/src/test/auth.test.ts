@@ -1,8 +1,8 @@
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import request from 'supertest';
 import mongoose from 'mongoose';
-import app from '../src/app';
-import User from '../src/models/User';
+import app from '../app';
+import User from '../models/User';
 
 const MONGO_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/sweetshop';
 
