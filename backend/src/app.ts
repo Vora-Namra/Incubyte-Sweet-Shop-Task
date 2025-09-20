@@ -8,14 +8,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
+app.use(cors({
+  origin: "http://localhost:5173", // your frontend URL
+  credentials: true, // if using cookies
+}));
+
  app.use('/api/auth', authRoutes);
  app.use('/api/sweets', sweetsRoutes);
 
 
-
-app.use((err: any, req: any, res: any, next: any) => {
-  console.error(err);
-  res.status(err.status || 500).json({ message: err.message || 'Server Error' });
-});
 
 export default app;
