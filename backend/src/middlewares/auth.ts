@@ -12,7 +12,7 @@ export const protect = (req: Request, res: Response, next: NextFunction) => {
       ? authHeader.split(' ')[1]
       : authHeader;
     console.log('Token:', token);
-    const secret = process.env.JWT_SECRET || 'Sweet_Shop_Secret@12679';
+    const secret = process.env.JWT_SECRET || '';
     const decoded: any = jwt.verify(token, secret);
 
     (req as any).user = { id: decoded.id, isAdmin: decoded.isAdmin };

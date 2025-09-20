@@ -10,7 +10,7 @@ const adminToken = generateToken({ id: new mongoose.Types.ObjectId(), isAdmin: t
 
 describe("Sweets API", () => {
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGO_URI_TEST || "mongodb://localhost:27017/sweetshop");
+    await mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/sweetshop");
   });
 
   afterAll(async () => {

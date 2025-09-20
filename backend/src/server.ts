@@ -1,8 +1,11 @@
+import dotenv from 'dotenv';
+
+dotenv.config(); 
 
 import { connectDB } from './config/db';
 import app from './app';
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 async function start() {
   try {
