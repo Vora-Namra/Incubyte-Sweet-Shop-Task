@@ -1,6 +1,5 @@
-// const API_URL =  "https://incubyte-sweet-shop-task.vercel.app/api/sweets";
-const API_URL = "http://localhost:5000/api/sweets";
-
+const API_URL = import.meta.env.VITE_BACKEND_URL + "/api/sweets" || "https://incubyte-sweet-shop-task-backend.vercel.app/api/sweets";
+console.log("API URL:", API_URL);
 async function handleResponse(res: Response) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {

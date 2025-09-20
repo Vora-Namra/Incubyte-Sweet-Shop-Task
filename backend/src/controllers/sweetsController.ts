@@ -17,8 +17,9 @@ export const createSweet = async (req: Request, res: Response) => {
     const sweet = await Sweet.create({ name: name.trim(), category: category.trim(), price, quantity });
     res.status(201).json(sweet);
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
-  }
+  console.error('Create Sweet Error:', err);
+  res.status(500).json({ message: 'Server error', error: err });
+}
 };
 
 
@@ -27,7 +28,7 @@ export const getSweets = async (_req: Request, res: Response) => {
     const sweets = await Sweet.find();
     res.json(sweets);
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error' + err });
   }
 };
 
@@ -86,7 +87,7 @@ export const searchSweets = async (req: Request, res: Response) => {
     res.json(sweets);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error during search" });
+    res.status(500).json({ message: "Server error during search" + err });
   }
 };
 
@@ -105,7 +106,7 @@ export const updateSweet = async (req: Request, res: Response) => {
 
     res.json(updated);
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error" + err });
   }
 };
 
@@ -115,7 +116,7 @@ export const deleteSweet = async (req: Request, res: Response) => {
     if (!deleted) return res.status(404).json({ message: 'Not found' });
     res.json({ message: 'Deleted' });
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error' + err });
   }
 };
 
@@ -135,7 +136,7 @@ export const purchaseSweet = async (req: Request, res: Response) => {
     await sweet.save();
     res.json({ message: 'Purchased', sweet });
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error' + err});
   }
 };
 export const restockSweet = async (req: Request, res: Response) => {
@@ -154,6 +155,6 @@ export const restockSweet = async (req: Request, res: Response) => {
     await sweet.save();
     res.json({ message: 'Restocked', sweet });
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error' + err });
   }
 };
