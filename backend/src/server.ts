@@ -2,7 +2,7 @@
 import { connectDB } from './config/db';
 import app from './app';
 
-const PORT = 3000;
+const PORT = 5000;
 
 async function start() {
   try {
