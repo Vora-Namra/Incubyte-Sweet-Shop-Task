@@ -239,19 +239,19 @@ const Landing = () => {
                 Join thousands of sweet shop owners who've transformed their business with our platform
               </p>
               <div className="flex items-center justify-center space-x-4">
-                <a 
-                  href="/register"
+                <Link
+                  to="/register"
                   className="bg-white text-pink-600 px-8 py-4 rounded-2xl hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl font-semibold text-lg group"
                 >
                   Start Free Trial
                   <ArrowRight className="inline w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                </a>
-                <a 
-                  href="/login"
+                </Link>
+                <Link
+                  to="/login"
                   className="border-2 border-white/30 text-white px-8 py-4 rounded-2xl hover:bg-white/10 transition-all duration-300 font-semibold text-lg backdrop-blur-sm"
                 >
                   Sign In
-                </a>
+                </Link>
               </div>
             </div>
             
