@@ -14,10 +14,13 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
 }
 
 export default function App() {
+  // Check if environment variable is loaded
+  console.log("VITE_BACKEND_URL:", import.meta.env.VITE_BACKEND_URL);
+  
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
+      <Router>  
+      <Routes>
           <Route path="/landing" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

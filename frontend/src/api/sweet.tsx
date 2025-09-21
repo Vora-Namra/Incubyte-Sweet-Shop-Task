@@ -1,4 +1,8 @@
-const API_URL = import.meta.env.VITE_BACKEND_URL + "/api/sweets" || "https://incubyte-sweet-shop-task-backend-mdfzwh6oy-vora-namra-projects.vercel.app/api/sweets";
+const API_URL =
+  (import.meta.env.VITE_BACKEND_URL
+    ? `${import.meta.env.VITE_BACKEND_URL}/api/sweets`
+    : "https://incubyte-sweet-shop-task-backend-mdfzwh6oy-vora-namra-projects.vercel.app/api/sweets");
+    
 console.log("API URL:", API_URL);
 async function handleResponse(res: Response) {
   const data = await res.json().catch(() => ({}));

@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
 
-const API_URL = (import.meta.env.VITE_BACKEND_URL ?? "https://incubyte-sweet-shop-task-backend-mdfzwh6oy-vora-namra-projects.vercel.app") + "/api/auth";
+const API_URL =
+  (import.meta.env.VITE_BACKEND_URL
+    ? `${import.meta.env.VITE_BACKEND_URL}/api/auth`
+    : "https://incubyte-sweet-shop-task-backend-mdfzwh6oy-vora-namra-projects.vercel.app/api/auth");
 
 export async function registerUser(data: { name: string; email: string; password: string }) {
   try {

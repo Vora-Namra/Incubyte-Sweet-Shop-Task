@@ -1,4 +1,5 @@
 import  { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { ChevronRight, Sparkles, ShoppingBag, Users, Zap, Star, ArrowRight, Heart } from 'lucide-react';
 
 const Landing = () => {
@@ -72,18 +73,18 @@ const Landing = () => {
             </div>
             
             <div className="flex items-center space-x-4">
-              <a 
-                href="/login"
+              <Link 
+                to="/login"
                 className="text-gray-700 hover:text-pink-600 transition-colors font-medium"
               >
                 Sign In
-              </a>
-              <a 
-                href="/register"
+              </Link>
+              <Link
+                to="/register"
                 className="bg-gradient-to-r from-pink-500 to-rose-600 text-white px-6 py-2 rounded-full hover:from-pink-600 hover:to-rose-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl font-medium"
               >
                 Get Started
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -113,13 +114,13 @@ const Landing = () => {
               </p>
               
               <div className="flex items-center space-x-4">
-                <a 
-                  href="/register"
+                <Link
+                  to="/register"
                   className="bg-gradient-to-r from-pink-500 to-rose-600 text-white px-8 py-4 rounded-2xl hover:from-pink-600 hover:to-rose-700 transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl font-semibold text-lg group"
                 >
                   Start Your Journey
                   <ChevronRight className="inline w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                </a>
+                </Link>
                 <button className="flex items-center space-x-2 text-gray-700 hover:text-pink-600 transition-colors font-medium">
                   <div className="w-12 h-12 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300">
                     <div className="w-0 h-0 border-l-4 border-l-pink-500 border-t-2 border-t-transparent border-b-2 border-b-transparent ml-1"></div>
