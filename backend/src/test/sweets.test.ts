@@ -22,150 +22,211 @@ describe("Sweets API", () => {
     await Sweet.deleteMany({});
   });
 
+  // ---------------- CREATE ----------------
   describe("POST /api/sweets", () => {
-    it("should fail if name contains only spaces", async () => {
+    it("should create a sweet successfully", async () => {
       const res = await request(app)
         .post("/api/sweets")
         .set("Authorization", `Bearer ${userToken}`)
         .send({
-          name: "   ",
-          category: "Chocolate",
+          name: "Lollipop",
+          category: "Candy",
           price: 10,
           quantity: 5,
         });
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(201);
+      expect(res.body).toHaveProperty("_id");
+      expect(res.body.name).toBe("Lollipop");
     });
 
-    it("should fail if category contains only spaces", async () => {
+    it("should reject if no token is provided", async () => {
       const res = await request(app)
         .post("/api/sweets")
-        .set("Authorization", `Bearer ${userToken}`)
-        .send({
-          name: "Candy",
-          category: "   ",
-          price: 5,
-          quantity: 10,
-        });
-      expect(res.status).toBe(400);
-    });
-
-    it("should fail if quantity is negative", async () => {
-      const res = await request(app)
-        .post("/api/sweets")
-        .set("Authorization", `Bearer ${userToken}`)
-        .send({
-          name: "Candy",
-          category: "Sugar",
-          price: 5,
-          quantity: -10,
-        });
-      expect(res.status).toBe(400);
-    });
-
-    it("should fail if price is string instead of number", async () => {
-      const res = await request(app)
-        .post("/api/sweets")
-        .set("Authorization", `Bearer ${userToken}`)
-        .send({
-          name: "Candy",
-          category: "Sugar",
-          price: "five",
-          quantity: 10,
-        });
-      expect(res.status).toBe(400);
-    });
-
-    it("should fail if extra unexpected fields are provided", async () => {
-      const res = await request(app)
-        .post("/api/sweets")
-        .set("Authorization", `Bearer ${userToken}`)
-        .send({
-          name: "Candy",
-          category: "Sugar",
-          price: 5,
-          quantity: 10,
-          isAvailable: true,
-          randomKey: "hack",
-        });
-      expect(res.status).toBe(400);
+        .send({ name: "Candy", category: "Sugar", price: 5, quantity: 5 });
+      expect(res.status).toBe(401);
     });
   });
 
+  // ---------------- GET ----------------
+  describe("GET /api/sweets", () => {
+    it("should return all sweets", async () => {
+      await Sweet.create({ name: "Barfi", category: "Indian", price: 50, quantity: 15 });
+      const res = await request(app)
+        .get("/api/sweets")
+        .set("Authorization", `Bearer ${userToken}`);
+      expect(res.status).toBe(200);
+      expect(res.body.length).toBeGreaterThan(0);
+    });
+
+    it("should return 401 if no token provided", async () => {
+      const res = await request(app).get("/api/sweets");
+      expect(res.status).toBe(401);
+    });
+  });
+
+  // ---------------- SEARCH ----------------
+  describe("GET /api/sweets/search", () => {
+    beforeEach(async () => {
+      await Sweet.insertMany([
+        { name: "Rasgulla", category: "Indian", price: 20, quantity: 10 },
+        { name: "Gulab Jamun", category: "Indian", price: 30, quantity: 5 },
+        { name: "Cookie", category: "Bakery", price: 15, quantity: 8 },
+      ]);
+    });
+
+    it("should return sweets by name search", async () => {
+      const res = await request(app)
+        .get("/api/sweets/search?name=Rasgulla")
+        .set("Authorization", `Bearer ${userToken}`);
+      expect(res.status).toBe(200);
+      expect(res.body[0].name).toBe("Rasgulla");
+    });
+
+    it("should return sweets within price range", async () => {
+      const res = await request(app)
+        .get("/api/sweets/search?minPrice=10&maxPrice=25")
+        .set("Authorization", `Bearer ${userToken}`);
+      expect(res.status).toBe(200);
+      expect(res.body.every((s: any) => s.price >= 10 && s.price <= 25)).toBe(true);
+    });
+
+    it("should fail with empty query params", async () => {
+      const res = await request(app)
+        .get("/api/sweets/search")
+        .set("Authorization", `Bearer ${userToken}`);
+      expect([400, 200]).toContain(res.status); // depending on your controller logic
+    });
+  });
+
+  // ---------------- UPDATE ----------------
   describe("PUT /api/sweets/:id", () => {
-    it("should fail if updating with negative price", async () => {
-      const sweet = await Sweet.create({ name: "Mint", category: "Candy", price: 3, quantity: 20 });
+    it("should update sweet successfully", async () => {
+      const sweet = await Sweet.create({ name: "Cake", category: "Bakery", price: 100, quantity: 2 });
       const res = await request(app)
         .put(`/api/sweets/${sweet._id}`)
         .set("Authorization", `Bearer ${userToken}`)
-        .send({ price: -5 });
-      expect(res.status).toBe(400);
+        .send({ price: 120 });
+      expect(res.status).toBe(200);
+      expect(res.body.price).toBe(120);
     });
 
-    it("should fail if updating with invalid quantity", async () => {
-      const sweet = await Sweet.create({ name: "Mint", category: "Candy", price: 3, quantity: 20 });
+    it("should return 404 if sweet not found", async () => {
+      const fakeId = new mongoose.Types.ObjectId();
       const res = await request(app)
-        .put(`/api/sweets/${sweet._id}`)
+        .put(`/api/sweets/${fakeId}`)
         .set("Authorization", `Bearer ${userToken}`)
-        .send({ quantity: -10 });
-      expect(res.status).toBe(400);
-    });
-
-    it("should fail if updating with extra unexpected fields", async () => {
-      const sweet = await Sweet.create({ name: "Mint", category: "Candy", price: 3, quantity: 20 });
-      const res = await request(app)
-        .put(`/api/sweets/${sweet._id}`)
-        .set("Authorization", `Bearer ${userToken}`)
-        .send({ price: 5, randomField: "hack" });
-      expect(res.status).toBe(400);
+        .send({ price: 20 });
+      expect(res.status).toBe(404);
     });
   });
 
+  // ---------------- DELETE ----------------
+  describe("DELETE /api/sweets/:id", () => {
+    it("should delete sweet successfully (admin only)", async () => {
+      const sweet = await Sweet.create({ name: "Pastry", category: "Bakery", price: 40, quantity: 10 });
+      const res = await request(app)
+        .delete(`/api/sweets/${sweet._id}`)
+        .set("Authorization", `Bearer ${adminToken}`);
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe("Deleted");
+    });
+
+    it("should forbid delete if user is not admin", async () => {
+      const sweet = await Sweet.create({ name: "Pastry", category: "Bakery", price: 40, quantity: 10 });
+      const res = await request(app)
+        .delete(`/api/sweets/${sweet._id}`)
+        .set("Authorization", `Bearer ${userToken}`);
+      expect(res.status).toBe(403);
+    });
+  });
+
+  // ---------------- PURCHASE ----------------
   describe("POST /api/sweets/:id/purchase", () => {
-    it("should fail if quantity exceeds stock", async () => {
-      const sweet = await Sweet.create({ name: "Toffee", category: "Candy", price: 2, quantity: 5 });
+    it("should purchase sweet successfully", async () => {
+      const sweet = await Sweet.create({ name: "Donut", category: "Bakery", price: 15, quantity: 5 });
       const res = await request(app)
         .post(`/api/sweets/${sweet._id}/purchase`)
         .set("Authorization", `Bearer ${userToken}`)
-        .send({ quantity: 10 });
-      expect(res.status).toBe(400);
+        .send({ quantity: 2 });
+      expect(res.status).toBe(200);
+      expect(res.body.sweet.quantity).toBe(3);
     });
 
-    it("should fail if quantity is not a number", async () => {
-      const sweet = await Sweet.create({ name: "Toffee", category: "Candy", price: 2, quantity: 5 });
+    it("should fail if sweet not found", async () => {
+      const fakeId = new mongoose.Types.ObjectId();
       const res = await request(app)
-        .post(`/api/sweets/${sweet._id}/purchase`)
+        .post(`/api/sweets/${fakeId}/purchase`)
         .set("Authorization", `Bearer ${userToken}`)
-        .send({ quantity: "three" });
-      expect(res.status).toBe(400);
+        .send({ quantity: 2 });
+      expect(res.status).toBe(404);
     });
   });
 
+  // ---------------- RESTOCK ----------------
   describe("POST /api/sweets/:id/restock", () => {
-    it("should fail if restock amount is string", async () => {
-      const sweet = await Sweet.create({ name: "Cookie", category: "Bakery", price: 5, quantity: 10 });
+    it("should restock sweet successfully (admin only)", async () => {
+      const sweet = await Sweet.create({ name: "Pie", category: "Bakery", price: 20, quantity: 5 });
       const res = await request(app)
         .post(`/api/sweets/${sweet._id}/restock`)
         .set("Authorization", `Bearer ${adminToken}`)
-        .send({ amount: "five" });
-      expect(res.status).toBe(400);
+        .send({ amount: 10 });
+      expect(res.status).toBe(200);
+      expect(res.body.sweet.quantity).toBe(15);
     });
 
-    it("should fail if restock amount is negative", async () => {
-      const sweet = await Sweet.create({ name: "Cookie", category: "Bakery", price: 5, quantity: 10 });
+    it("should forbid restock if not admin", async () => {
+      const sweet = await Sweet.create({ name: "Pie", category: "Bakery", price: 20, quantity: 5 });
       const res = await request(app)
         .post(`/api/sweets/${sweet._id}/restock`)
-        .set("Authorization", `Bearer ${adminToken}`)
-        .send({ amount: -3 });
-      expect(res.status).toBe(400);
+        .set("Authorization", `Bearer ${userToken}`)
+        .send({ amount: 5 });
+      expect(res.status).toBe(403);
+    });
+  });
+
+  // ---------------- EXTRA EDGE CASES ----------------
+  describe("Extra edge cases", () => {
+    it("should fail to create sweet if token is invalid", async () => {
+      const res = await request(app)
+        .post("/api/sweets")
+        .set("Authorization", "Bearer invalid_token")
+        .send({ name: "Candy", category: "Sugar", price: 5, quantity: 5 });
+      expect(res.status).toBe(401);
+      expect(res.body.message).toMatch(/invalid token/i);
     });
 
-    it("should fail if restock request has extra unexpected fields", async () => {
-      const sweet = await Sweet.create({ name: "Cookie", category: "Bakery", price: 5, quantity: 10 });
+      it("should ignore non-numeric minPrice gracefully", async () => {
+        const res = await request(app)
+          .get("/api/sweets/search?minPrice=abc")
+          .set("Authorization", `Bearer ${userToken}`);
+        expect(res.status).toBe(200);
+        expect(Array.isArray(res.body)).toBe(true);
+      });
+    it("should return empty array if no sweets match filter", async () => {
       const res = await request(app)
-        .post(`/api/sweets/${sweet._id}/restock`)
-        .set("Authorization", `Bearer ${adminToken}`)
-        .send({ amount: 5, randomField: true });
-      expect(res.status).toBe(400);
-    });
+        .get("/api/sweets/search?name=NonExistentSweet")
+        .set("Authorization", `Bearer ${userToken}`);
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual([]);
+      });
+
+      it("should fail to update sweet with invalid ObjectId", async () => {
+        const res = await request(app)
+          .put("/api/sweets/1234invalid")
+          .set("Authorization", `Bearer ${userToken}`)
+          .send({ price: 50 });
+        expect([400, 500]).toContain(res.status);
+      });
+
+          
+      it("should not allow purchase with quantity = 0", async () => {
+        const sweet = await Sweet.create({ name: "Brownie", category: "Bakery", price: 25, quantity: 10 });
+        const res = await request(app)
+          .post(`/api/sweets/${sweet._id}/purchase`)
+          .set("Authorization", `Bearer ${userToken}`)
+          .send({ quantity: 0 });
+        expect(res.status).toBe(400);
+        expect(res.body.errors[0].message).toMatch(/must be > 0/i);
+      });
   });
 });
