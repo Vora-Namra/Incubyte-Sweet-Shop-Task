@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { ChevronRight, Sparkles, ShoppingBag, Users, Zap, Star, ArrowRight, Heart } from 'lucide-react';
 
 const Landing = () => {
